@@ -1,12 +1,4 @@
-void wind_wire(byte dir, uint16_t turns) {
-  // Initialize variables for steps needed for x and y movements
-
-  // Print variables for debugging
-  Serial.println("\nSteps   X: " + String(x_spr));
-  Serial.println("Steps   Y: " + String(steps_y_float, 4) + " (" + String(wire_diameter, 4) + "mm)");
-  Serial.println("Steps X/Y: " + String(steps_x_per_y_float, 4));
-  Serial.println("");
-
+void wind_wire(byte x_dir, byte y_dir, uint16_t total_turns) {
 
   // Counter to track fractional steps for y
   static float fractional_counter_x = 0.0;
@@ -14,48 +6,78 @@ void wind_wire(byte dir, uint16_t turns) {
   static uint16_t turn_counter = 0;
 
   // Set the direction for stepper_x
-  set_dir_x(dir);
-  set_dir_y(dir);
+  set_dir_x(x_dir);
+  set_dir_y(y_dir);
 
-  for (uint16_t i = 0; i < turns; i++) {
+  uint16_t maxMicros = maxDelay;
+  uint16_t minMicros = microsbetweenSteps;
 
-    for (uint16_t n = 0; n < steps_y_int; n++) {
-      // Move stepper_y
-      pulse_y(0);
+  for (uint16_t i = 0; i < total_turns; i++) {
 
-      // Move x multiple times for every step of y
-      // because steps for x is larger than steps for y
-      for (uint16_t m = 0; m < steps_x_per_y_int; m++) {
-        pulse_x(microsbetweenSteps);
-      }
-      // Increment fractional_counter and move stepper_x if it exceeds one
-      fractional_counter_x += steps_x_remainder;
-      if (fractional_counter_x >= 1.0) {
-        pulse_x(0);
-        fractional_counter_x -= 1.0;  // Decrement by 1 to account for the whole step
-      }
-    }
+    uint16_t y_motor_steps = steps_y_int;
+
     // Increment fractional_counter and move stepper_y if it exceeds one
     fractional_counter_y += steps_y_remainder;
     if (fractional_counter_y >= 1.0) {
-      pulse_y(microsbetweenSteps);
+      pulse_y(50);
       fractional_counter_y -= 1.0;  // Decrement by 1 to account for the whole step
     }
 
-    turn_counter++;
+    for (uint16_t n = 0; n < y_motor_steps; n++) {
+      
+      // Move stepper_y
+      pulse_y(0);
 
-    Serial.print("Turns : " + String(turn_counter));
-    Serial.print(" , X fraction : " + String(fractional_counter_x));
-    Serial.println(" , Y fraction : " + String(fractional_counter_y));
+      // Step X multiple times for every step of y
+      uint16_t x_motor_steps = steps_x_per_y_int;
 
-    //Every few turns move forward to compensate for helical angle
-    /*if (turn_counter % 7 == 0) {
-      float s = steps_y_float * (0.75);
-      for (uint16_t m = 0; m < s; m++) {
-        pulse_y(microsbetweenSteps);
+      // Track fractional steps
+      fractional_counter_x += steps_x_remainder;
+      if (fractional_counter_x >= 1.0) {
+        x_motor_steps++;
+        fractional_counter_x -= 1.0;  // Decrement by 1 to account for the whole step
       }
-      Serial.println("Moving Forward...");
-    }*/
+
+      //Constant speed
+      //stepMotor(x_step, x_motor_steps, microsbetweenSteps);
+
+
+      //Code for acceleration and deceleration
+      //If its first turn
+      if (i == 0) {
+
+        if (n == 0) {
+          stepMotorAcc(x_motor_steps, minMicros, maxMicros);
+        } else if (n + 1 != y_motor_steps) {
+          stepMotor(x_step, x_motor_steps, microsbetweenSteps);
+        } else if (n + 1 == y_motor_steps && i + 1 == total_turns) {  //If its first and last turn
+          stepMotorDec(x_motor_steps, minMicros, maxMicros);
+        }
+
+      } else if (i != 0) {
+
+        if (i + 1 != total_turns) {  //All other turns except first & last
+          stepMotor(x_step, x_motor_steps, microsbetweenSteps);
+        } else if (i + 1 == total_turns) {  //Last Turns
+          if (n + 1 == y_motor_steps) {
+            stepMotorDec(x_motor_steps, minMicros, maxMicros);
+          } else {
+            stepMotor(x_step, x_motor_steps, microsbetweenSteps);
+          }
+        }
+      }
+    }
+    ++turn_counter;
+    String str = "";
+    if(turn_counter % 5 == 0){
+      str = "\r\n";
+    }else{
+      str = "\t";
+    }
+
+    Serial.print("  Turns : " + String(turn_counter) + " , Y_frac: " + String(fractional_counter_y, 4) + str);
+
+    
   }
 }
 

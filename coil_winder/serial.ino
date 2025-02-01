@@ -20,38 +20,48 @@ void recvWithEndMarker() {
   }
 }
 
-void showNewNumber() {
-  if (newData == true) {
-    dataNumber = 0;                    // new for this version
-    dataNumber = atoi(receivedChars);  // new for this version
-    Serial.println(receivedChars);
-    //Serial.print("Data as Number ... ");    // new for this version
-    //Serial.println(dataNumber);     // new for this version
-
+void showNewNumber(int *value, const String &str = "") {
+  if (newData) {
     newData = false;
+    *value = atoi(receivedChars);
+    if (str.length() > 0) {
+      Serial.print(str);
+    }
+    Serial.println(receivedChars);
   }
 }
 
-void getData() {
-  while (dataNumber == 0) {
+void showNewNumber(float *value, const String &str = "") {
+  if (newData) {
+    newData = false;
+    *value = atof(receivedChars);
+    if (str.length() > 0) {
+      Serial.print(str);
+    }
+    Serial.println(receivedChars);
+  }
+}
+
+
+void getData(int *value) {
+  while (*value == 0) {
     recvWithEndMarker();
-    showNewNumber();
+    showNewNumber(value);
   }
 }
 
+void getData(float *value) {
+  while (*value == 0) {
+    recvWithEndMarker();
+    showNewNumber(value);
+  }
+}
 
-int showMenu() {
-  String s0 = "wind coil";
-  String s1 = "move head ";
-  Serial.println("1. " + s0);
-  Serial.println("2. " + s1 + "(mm)");
-  Serial.println("3. " + s1 + String(steps_y_float) + " (steps_y)");
-  Serial.println("4. un" + s0);
-  Serial.println("5. rotate coil");
-  Serial.print(s_enter + ": ");
-  while (Serial.available() == 0) {}
-  String str = Serial.readStringUntil('\n');
-  int menuChoice = str.toInt();
-  Serial.println(menuChoice);
-  return menuChoice;
+void getNewSpeed() {
+  int value = 0;
+  recvWithEndMarker();
+  showNewNumber(&value, "New delay: ");
+  if (value >= minDelay && value <= maxDelay) {
+    microsbetweenSteps = value;
+  }
 }
