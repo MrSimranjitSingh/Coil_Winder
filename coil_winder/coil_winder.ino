@@ -15,8 +15,8 @@ const unsigned long x_spr = 51200;  //Steps per revolution = 200 * 32 * 8
 const unsigned long y_spr = 6400;   //Steps per revolution = 200 * 32
 const unsigned long z_spr = 6400;   //Steps per revolution = 200 * 32
 
-const float spacing_mm = 0.02;                    // Spacing between turns. Manufacturer states wire tolerance is +/-0.05mm for 34awg wire
-const float wire_diameter = 0.1601 + spacing_mm;  // Wire diameter in mm (this is how much the wire guide advances per rotation)
+const float spacing_mm = 0.01;                    // Spacing between turns. Manufacturer states wire tolerance is +/-0.05mm for 34awg wire
+const float wire_diameter = 0.1016 + spacing_mm;  // Wire diameter in mm (this is how much the wire guide advances per rotation)
 
 const float steps_per_mm = float(y_spr) / 8.0;  //2mm pitch 4 start lead screw (4*2). 800 steps = 1mm
 

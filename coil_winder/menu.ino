@@ -93,7 +93,7 @@ void windSlotedCoil() {
     float turns = distance / wire_diameter;
 
     if (turns >= 1.0) {
-      44Serial.println("\r\nDistance: " + String(distance, 4) + "   Turns: " + String(round(turns)));
+      Serial.println("\r\nDistance: " + String(distance, 4) + "   Turns: " + String(round(turns)));
       if (direction == 1) wind_wire(1, 0, round(turns));
       else wind_wire(1, 1, round(turns));
       direction *= -1;

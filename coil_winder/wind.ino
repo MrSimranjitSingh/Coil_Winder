@@ -39,12 +39,12 @@ void wind_wire(byte x_dir, byte y_dir, uint16_t total_turns) {
       }
 
       //Constant speed
-      //stepMotor(x_step, x_motor_steps, microsbetweenSteps);
+      stepMotor(x_step, x_motor_steps, microsbetweenSteps);
 
-
+      
       //Code for acceleration and deceleration
       //If its first turn
-      if (i == 0) {
+      /*if (i == 0) {
 
         if (n == 0) {
           stepMotorAcc(x_motor_steps, minMicros, maxMicros);
@@ -65,7 +65,7 @@ void wind_wire(byte x_dir, byte y_dir, uint16_t total_turns) {
             stepMotor(x_step, x_motor_steps, microsbetweenSteps);
           }
         }
-      }
+      }*/
     }
     ++turn_counter;
     String str = "";
